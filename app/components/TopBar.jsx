@@ -7,19 +7,23 @@ import {
   shortenAddress,
   handleAccountsChanged,
 } from "../utils/appFeatures";
+import { useGameContext } from "../context/GameContext";
 
 const TopBar = () => {
   const [connectedWalletAddress, setconnectedWalletAddress] = useState("");
+  const { signer, setSigner } = useGameContext();
 
   const handleConnectWallet = async () => {
     if (connectedWalletAddress == "") {
       const signer = await connectWallet();
       setconnectedWalletAddress(signer.address);
+      setSigner(signer);
     }
   };
 
   const handelCheckIfWalletIsConnected = async () => {
     const signer = await checkIfWalletIsConnected();
+    setSigner(signer);
     console.log(signer);
     setconnectedWalletAddress(signer.address);
   };

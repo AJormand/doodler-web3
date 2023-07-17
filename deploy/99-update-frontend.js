@@ -27,6 +27,7 @@ async function updateAbi() {
 async function updateContractAddress() {
   const betContract = await ethers.getContract("BetContract");
   console.log(betContract.target);
+  console.log(network.config.chainId);
   const chainId = network.config.chainId.toString();
   console.log(chainId);
   const contractAddresses = JSON.parse(

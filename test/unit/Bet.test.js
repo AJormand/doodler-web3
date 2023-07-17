@@ -45,6 +45,25 @@ describe("BetContract tests", function () {
     });
   });
 
+  describe("getPendingBets", function () {
+    it("returns an epmty array at start", async () => {
+      const pendingBets = await betContract.getPendingBets();
+      //console.log(pendingBets.length);
+      expect(pendingBets.length).to.equal(0);
+    });
+
+    it("returns list of pending arrays", async () => {
+      await betContract.connect(player1).createBet(player1.address, {
+        value: ethers.parseEther("0.2"),
+      });
+      await betContract.connect(player1).createBet(player1.address, {
+        value: ethers.parseEther("0.3"),
+      });
+      const pendingBets = await betContract.getPendingBets();
+      console.log(pendingBets);
+    });
+  });
+
   //   describe("takeBet", function () {
   //     it("Reverts if bet status is not Created", async () => {
   //       await betContract.connect(player1).createBet(player2.address, {

@@ -1,4 +1,6 @@
 import { ethers } from "ethers";
+import networkMapping from "../../constants/networkMapping.json";
+import BetContractABI from "../../constants/BetContract.json";
 
 //CHECK IF WALLET IS CONNECT
 export const checkIfWalletIsConnected = async () => {
@@ -19,6 +21,7 @@ export const connectWallet = async () => {
       const connectedAccount = accounts[0];
       console.log("Connected account:", connectedAccount);
       const signer = await provider.getSigner();
+      console.log("signer", signer);
       return signer;
     } catch (error) {
       console.error("Failed to connect account:", error);
@@ -41,18 +44,20 @@ export const handleAccountsChanged = (accounts) => {
 
 //CHECK NETWORK
 export const checkNetwork = async () => {
-  // targets Rinkeby chain, id 4
-  const targetNetworkId = "0x4";
-
   if (window.ethereum) {
-    const currentChainId = await window.ethereum.request({
+    const currentChainIdHex = await window.ethereum.request({
       method: "eth_chainId",
     });
 
-    if (currentChainId == targetNetworkId) {
-      console.log("correct network");
+    console.log(currentChainIdHex);
+    const currentChainId = parseInt(currentChainIdHex, 16);
+    console.log(currentChainId);
+
+    if (networkMapping.hasOwnProperty(currentChainId)) {
+      console.log("Contract exists for this network", currentChainId);
+      return currentChainId;
     } else {
-      console.log("pls change network");
+      console.log("pls change network ", currentChainId);
     }
   }
 };
@@ -65,5 +70,33 @@ export const shortenAddress = (address) => {
 //----------------FETCHING CONTRACT------------------------
 
 //FETCH BetContract
+export const fetchBetContract = async (signer) => {
+  //get latest contract address
+  const currentChainId = await checkNetwork();
+  if (currentChainId) {
+    const betContractAddresses = networkMapping[currentChainId]?.BetContract;
+    //newest betContract address is the last in the array
+    const lastBetContractAddress =
+      betContractAddresses?.[betContractAddresses.length - 1];
+    console.log(lastBetContractAddress);
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    console.log("signer1", signer);
+
+    const contract = new ethers.Contract(
+      lastBetContractAddress,
+      BetContractABI,
+      signer
+    );
+    console.log(contract);
+    const owner = await contract.owner();
+    console.log(owner);
+
+    // const pendingB = await contract.getPendingBets();
+    // console.log(pendingB);
+    return contract;
+  }
+};
 
 //CONNECT BetContract

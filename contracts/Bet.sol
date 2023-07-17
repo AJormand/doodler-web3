@@ -78,6 +78,15 @@ contract BetContract is Ownable {
     //Getters//
 
     function getPendingBets() public view returns (Bet[] memory) {
-        return pendingBets;
+        uint256 pendingBetsNumber = pendingBets.length;
+        Bet[] memory result = new Bet[](pendingBetsNumber);
+        for (uint256 i = 0; i < pendingBetsNumber; i++) {
+            result[i] = pendingBets[i];
+        }
+        return result;
+    }
+
+    function getBet(uint256 id) public view returns (Bet memory) {
+        return id2Bet[id];
     }
 }

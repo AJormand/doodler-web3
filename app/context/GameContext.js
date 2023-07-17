@@ -5,12 +5,10 @@ import { createContext, useContext, useState } from "react";
 const GameContext = createContext({});
 
 export const GameContextProvider = ({ children }) => {
-  const [signer, setSetsigner] = useState(null);
-
-  const [color, setColor] = useState("red");
+  const [signer, setSigner] = useState(null);
 
   return (
-    <GameContext.Provider value={{ color, setColor, signer, setSetsigner }}>
+    <GameContext.Provider value={{ signer, setSigner }}>
       {children}
     </GameContext.Provider>
   );
