@@ -3,6 +3,7 @@ const fs = require("fs");
 //using dotenv as env.local works only inside app folder in nextjs
 require("dotenv").config();
 
+const contractArtifacts = require("../artifacts/contracts/Bet.sol/BetContract.json");
 const frontEndContractFile = "../doodler-web3/constants/networkMapping.json";
 const frontendAbiLocation = "../doodler-web3/constants/";
 
@@ -15,12 +16,24 @@ module.exports = async function () {
   }
 };
 
-async function updateAbi() {
-  const betContract = await ethers.getContract("BetContract");
+//abi is not properly extracted this way using ehters 6
+// async function updateAbi() {
+//   const betContract = await ethers.getContract("BetContract");
 
+//   fs.writeFileSync(
+//     `${frontendAbiLocation}BetContract.json`,
+//     betContract.interface.formatJson()
+//   );
+// }
+
+async function updateAbi() {
+  const contractABI = contractArtifacts.abi;
+  // Print the ABI
+  console.log(JSON.stringify(contractABI, null, 2));
+  // You can save the ABI to a separate file if needed
   fs.writeFileSync(
     `${frontendAbiLocation}BetContract.json`,
-    betContract.interface.formatJson()
+    JSON.stringify(contractABI, null, 2)
   );
 }
 

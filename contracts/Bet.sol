@@ -14,7 +14,6 @@ contract BetContract is Ownable {
 
     Counters.Counter private _id;
     uint256 public minimumBet = 0.001 ether;
-    Bet[] pendingBets;
     mapping(uint256 => Bet) id2Bet;
 
     enum BetStatus {
@@ -32,7 +31,18 @@ contract BetContract is Ownable {
         address player2;
         uint256 scorePlayer2;
         address winner;
+        uint256 betAmount;
     }
+
+    event BetCreated(uint256 id, address indexed player1, uint256 amount);
+    event BetTaken(uint256 id, address indexed player2, uint256 amount);
+    event BetCompleted(
+        uint256 id,
+        address indexed player1,
+        address indexed player2,
+        uint256 amount
+    );
+    event BetFailed(uint256 id, address indexed player1, uint256 amount);
 
     function createBet(address player1) public payable {
         require(msg.value > minimumBet, "Bet less than minimumBet");
@@ -44,16 +54,19 @@ contract BetContract is Ownable {
             0,
             address(0),
             0,
-            address(0)
+            address(0),
+            msg.value
         );
-        pendingBets.push(newBet);
+        id2Bet[_id.current()] = newBet;
     }
 
     function takeBet(uint256 _betId, address _player2) public payable {
-        Bet memory bet = id2Bet[_betId];
+        Bet storage bet = id2Bet[_betId];
         require(bet.status == BetStatus.Created, "You can't take this bet");
+        require(bet.betAmount == msg.value, "Bet amount not matched");
         bet.status = BetStatus.InProgress;
         bet.player2 = _player2;
+        id2Bet[_betId] = bet;
     }
 
     function updateScore(
@@ -78,12 +91,30 @@ contract BetContract is Ownable {
     //Getters//
 
     function getPendingBets() public view returns (Bet[] memory) {
-        uint256 pendingBetsNumber = pendingBets.length;
-        Bet[] memory result = new Bet[](pendingBetsNumber);
-        for (uint256 i = 0; i < pendingBetsNumber; i++) {
-            result[i] = pendingBets[i];
+        uint256 allBetsNumber = _id.current();
+        uint256 pendingBetsNumber = 0;
+
+        for (uint i = 1; i <= allBetsNumber; i++) {
+            if (
+                id2Bet[i].status == BetStatus.Created ||
+                id2Bet[i].status == BetStatus.InProgress
+            ) {
+                pendingBetsNumber++;
+            }
         }
-        return result;
+
+        Bet[] memory pendingBetsArr = new Bet[](pendingBetsNumber);
+        uint256 pendingBetArrLocation = 0;
+        for (uint256 i = 1; i <= pendingBetsNumber; i++) {
+            if (
+                id2Bet[i].status == BetStatus.Created ||
+                id2Bet[i].status == BetStatus.InProgress
+            ) {
+                pendingBetsArr[pendingBetArrLocation] = id2Bet[i];
+                pendingBetArrLocation++;
+            }
+        }
+        return pendingBetsArr;
     }
 
     function getBet(uint256 id) public view returns (Bet memory) {

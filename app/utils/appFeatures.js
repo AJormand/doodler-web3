@@ -48,10 +48,7 @@ export const checkNetwork = async () => {
     const currentChainIdHex = await window.ethereum.request({
       method: "eth_chainId",
     });
-
-    console.log(currentChainIdHex);
     const currentChainId = parseInt(currentChainIdHex, 16);
-    console.log(currentChainId);
 
     if (networkMapping.hasOwnProperty(currentChainId)) {
       console.log("Contract exists for this network", currentChainId);
@@ -80,21 +77,11 @@ export const fetchBetContract = async (signer) => {
       betContractAddresses?.[betContractAddresses.length - 1];
     console.log(lastBetContractAddress);
 
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    console.log("signer1", signer);
-
     const contract = new ethers.Contract(
       lastBetContractAddress,
       BetContractABI,
       signer
     );
-    console.log(contract);
-    const owner = await contract.owner();
-    console.log(owner);
-
-    // const pendingB = await contract.getPendingBets();
-    // console.log(pendingB);
     return contract;
   }
 };
