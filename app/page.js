@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useGameContext } from "./context/GameContext";
 import {
   connectWallet,
@@ -13,6 +14,7 @@ import {
 import { ethers } from "ethers";
 
 export default function Home() {
+  const router = useRouter();
   const { signer } = useGameContext();
   const [pendingBets, setPendingBets] = useState([]);
 
@@ -62,9 +64,13 @@ export default function Home() {
   const takeBet = async (betId) => {
     console.log(betId, signer.address);
     const betContract = await fetchBetContract(signer);
-    await betContract.takeBet(betId, signer.address, {
+    const tx = await betContract.takeBet(betId, signer.address, {
       value: ethers.parseEther("0.2"),
     });
+    // Wait for the transaction to be mined
+    const receipt = await tx.wait(1);
+
+    router.push(`/game?id=${betId}`);
   };
 
   return (

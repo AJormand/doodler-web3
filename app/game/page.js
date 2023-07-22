@@ -1,8 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { fetchBetContract } from "../utils/appFeatures";
+import { useGameContext } from "../context/GameContext";
 
 export default function Game() {
+  const searchParams = useSearchParams();
+  const { signer } = useGameContext();
   const [gameRunning, setGameRunning] = useState(true);
   const [platforms, setPlatforms] = useState([]);
   const [player, setPlayer] = useState({
@@ -107,12 +112,16 @@ export default function Game() {
         });
         return { ...player, y: player.y - 2 };
       } else {
+        //game over
         setGameRunning(false);
         setMoveVerticalDirection("");
         setMoveHorizontalDirection("");
         clearInterval(moveDownIntervalID);
         clearInterval(moveLeftIntervalID);
         clearInterval(moveRightIntervalID);
+        //update score only if real game
+        const betId = searchParams.get("id");
+        if (betId) updateScoreToContract();
         return player;
       }
     });
@@ -124,6 +133,12 @@ export default function Game() {
 
   const moveRight = () => {
     setPlayer((player) => ({ ...player, x: player.x + 2 }));
+  };
+
+  const updateScoreToContract = async () => {
+    const betContract = await fetchBetContract(signer);
+    const betId = searchParams.get("id");
+    await betContract.updateScore(betId, signer.address, gameScore);
   };
 
   useEffect(() => {
