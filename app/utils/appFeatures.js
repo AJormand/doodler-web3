@@ -82,7 +82,7 @@ export const fetchBetContract = async (signer) => {
       BetContractABI,
       signer
     );
-    return contract;
+    return { contract, lastBetContractAddress, BetContractABI, currentChainId };
   }
 };
 

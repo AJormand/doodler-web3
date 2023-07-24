@@ -2,8 +2,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { fetchBetContract } from "../utils/appFeatures";
 import { useGameContext } from "../context/GameContext";
+import { fetchBetContract } from "../utils/appFeatures";
 
 export default function Game() {
   const searchParams = useSearchParams();
@@ -136,9 +136,36 @@ export default function Game() {
   };
 
   const updateScoreToContract = async () => {
-    const betContract = await fetchBetContract(signer);
     const betId = searchParams.get("id");
-    await betContract.updateScore(betId, signer.address, gameScore);
+    console.log(betId);
+    const { lastBetContractAddress, BetContractABI, currentChainId } =
+      await fetchBetContract(signer);
+
+    try {
+      const response = await fetch("/api/bets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          betId,
+          gameScore,
+          lastBetContractAddress,
+          BetContractABI,
+          currentChainId,
+          player: signer.address,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data); // Handle the JSON data returned from the backend
+      } else {
+        console.log("Request failed:", response.status);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -262,6 +289,7 @@ export default function Game() {
             >
               Back
             </Link>
+            <button onClick={() => updateScoreToContract()}>Test</button>
           </div>
         )}
       </div>
