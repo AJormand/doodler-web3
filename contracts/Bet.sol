@@ -76,13 +76,14 @@ contract BetContract is Ownable {
     ) public onlyOwner {
         Bet storage updatedBet = id2Bet[_betId];
         require(
-            updatedBet.status == BetStatus.InProgress,
-            "Bet status not inProgress"
+            updatedBet.status == BetStatus.InProgress ||
+                updatedBet.status == BetStatus.Created,
+            "Bet status not Created or inProgress"
         );
         if (updatedBet.player1 == _player) {
             updatedBet.scorePlayer1 = _score;
         } else if (updatedBet.player2 == _player) {
-            updatedBet.scorePlayer2 == _score;
+            updatedBet.scorePlayer2 = _score;
         } else {
             revert("Invalid player address");
         }

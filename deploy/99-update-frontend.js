@@ -8,7 +8,7 @@ const frontEndContractFile = "../doodler-web3/constants/networkMapping.json";
 const frontendAbiLocation = "../doodler-web3/constants/";
 
 module.exports = async function () {
-  console.log(process.env.UPDATE_FRONT_END);
+  // console.log(process.env.UPDATE_FRONT_END);
 
   if (process.env.UPDATE_FRONT_END) {
     await updateContractAddress();
@@ -29,7 +29,7 @@ module.exports = async function () {
 async function updateAbi() {
   const contractABI = contractArtifacts.abi;
   // Print the ABI
-  console.log(JSON.stringify(contractABI, null, 2));
+  // console.log(JSON.stringify(contractABI, null, 2));
   // You can save the ABI to a separate file if needed
   fs.writeFileSync(
     `${frontendAbiLocation}BetContract.json`,
@@ -39,16 +39,12 @@ async function updateAbi() {
 
 async function updateContractAddress() {
   const betContract = await ethers.getContract("BetContract");
-  console.log(betContract.target);
-  console.log(network.config.chainId);
+  // console.log(betContract.target);
+  // console.log(network.config.chainId);
   const chainId = network.config.chainId.toString();
-  console.log(chainId);
   const contractAddresses = JSON.parse(
     fs.readFileSync(frontEndContractFile, "utf8")
   );
-  console.log(contractAddresses);
-
-  console.log(chainId in contractAddresses);
 
   if (chainId in contractAddresses) {
     if (
@@ -57,7 +53,6 @@ async function updateContractAddress() {
       contractAddresses[chainId]["BetContract"].push(betContract.target);
     }
   } else {
-    console.log(betContract.target);
     contractAddresses[chainId] = {
       BetContract: [betContract.target],
     };

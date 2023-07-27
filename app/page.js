@@ -19,8 +19,8 @@ export default function Home() {
   const [pendingBets, setPendingBets] = useState([]);
 
   const fetchPendingBets = async () => {
-    const betContract = await fetchBetContract(signer);
-    const bets = await betContract.getPendingBets();
+    const { contract } = await fetchBetContract(signer);
+    const bets = await contract.getPendingBets();
     const formatedBets = formatBetsData(bets);
     console.log(formatedBets);
     setPendingBets(formatedBets);
@@ -55,16 +55,16 @@ export default function Home() {
   };
 
   const createBet = async () => {
-    const betContract = await fetchBetContract(signer);
-    betContract.createBet(signer.address, {
+    const { contract } = await fetchBetContract(signer);
+    contract.createBet(signer.address, {
       value: ethers.parseEther("0.2"),
     });
   };
 
   const takeBet = async (betId) => {
     console.log(betId, signer.address);
-    const betContract = await fetchBetContract(signer);
-    const tx = await betContract.takeBet(betId, signer.address, {
+    const { contract } = await fetchBetContract(signer);
+    const tx = await contract.takeBet(betId, signer.address, {
       value: ethers.parseEther("0.2"),
     });
     // Wait for the transaction to be mined
@@ -145,12 +145,34 @@ export default function Home() {
             </div>
 
             <p className="font-bold text-sm mt-3">Winner: {bet.winner}</p>
-            <button
-              className="bg-slate-400 text-white px-2 py-1 rounded-md mt-5 text-sm"
-              onClick={() => takeBet(bet.id)}
-            >
-              Take bet
-            </button>
+
+            {signer.address != bet.player1 &&
+              bet.scorePlayer2 == 0 &&
+              (bet.status == "Created" || bet.status == "InProgress") && (
+                <button
+                  className="bg-slate-400 disabled:bg-slate-300 text-white px-2 py-1 rounded-md mt-5 text-sm"
+                  onClick={() => takeBet(bet.id)}
+                  disabled={bet.status != "Created"}
+                >
+                  Take bet
+                </button>
+              )}
+
+            {signer.address == bet.player1 &&
+              bet.scorePlayer1 == 0 &&
+              (bet.status == "Created" || bet.status == "InProgress") && (
+                <button
+                  className="bg-slate-400 disabled:bg-slate-300 text-white px-2 py-1 rounded-md mt-5 text-sm"
+                  onClick={() => router.push(`/game?id=${bet.id}`)}
+                  disabled={
+                    bet.status != "Created" &&
+                    bet.status != "InProgress" &&
+                    !player1.scorePlayer1 == 0
+                  }
+                >
+                  Start Game
+                </button>
+              )}
           </div>
         ))}
       </div>

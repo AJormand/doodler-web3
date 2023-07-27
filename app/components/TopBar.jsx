@@ -14,6 +14,7 @@ const TopBar = () => {
   const { signer, setSigner } = useGameContext();
 
   const handleConnectWallet = async () => {
+    console.log(signer);
     if (connectedWalletAddress == "") {
       const signer = await connectWallet();
       setconnectedWalletAddress(signer.address);
@@ -32,9 +33,11 @@ const TopBar = () => {
     handelCheckIfWalletIsConnected();
 
     //Add event listener for accountsChanged
-    ethereum.on("accountsChanged", (accounts) => {
+    ethereum.on("accountsChanged", async (accounts) => {
       const newAccount = handleAccountsChanged(accounts);
       setconnectedWalletAddress(newAccount);
+      const signer = await checkIfWalletIsConnected();
+      setSigner(signer);
     });
     // Clean up the event listener on component unmount
     return () => {

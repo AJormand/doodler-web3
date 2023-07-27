@@ -18,6 +18,9 @@ module.exports = {
     deployer: {
       default: 0,
     },
+    player1: {
+      default: 0,
+    },
   },
   networks: {
     localhost: {
