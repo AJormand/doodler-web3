@@ -87,6 +87,19 @@ contract BetContract is Ownable {
         } else {
             revert("Invalid player address");
         }
+
+        declareWinner(updatedBet);
+    }
+
+    function declareWinner(Bet bet) private {
+        if (bet.scorePlayer1 > 0 && bet.scorePlayer2 > 0) {
+            // Determine the winner based on scores
+            id2Bet[bet.id].winner = bet.scorePlayer1 > bet.scorePlayer2
+                ? bet.player1
+                : bet.player2;
+            id2Bet[bet.id].status = BetStatus.Completed;
+            emit BetCompleted(bet.id, bet.player1, bet.player2, bet.amount);
+        }
     }
 
     //Getters//
