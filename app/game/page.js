@@ -4,6 +4,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useGameContext } from "../context/GameContext";
 import { fetchBetContract } from "../utils/appFeatures";
+import LoadingSpinner from "../components/LoadingSpinner";
+import TopBar from "../components/TopBar";
 
 export default function Game() {
   const searchParams = useSearchParams();
@@ -18,6 +20,7 @@ export default function Game() {
   const [moveVerticalDirection, setMoveVerticalDirection] = useState("up");
   const [playerJumpPoint, setplayerJumpPoint] = useState(0);
   const [gameScore, setGameScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   //GRID
   let gridHeight = 500;
   let gridWidth = 300;
@@ -136,6 +139,7 @@ export default function Game() {
   };
 
   const updateScoreToContract = async () => {
+    setIsLoading(true);
     const betId = searchParams.get("id");
     console.log(betId);
     const { lastBetContractAddress, BetContractABI, currentChainId } =
@@ -166,6 +170,8 @@ export default function Game() {
     } catch (error) {
       console.log(error);
     }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -238,6 +244,9 @@ export default function Game() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-24">
+      {/* Loading spinner */}
+      {isLoading && <LoadingSpinner />}
+
       <div className="flex justify-start items-start">
         <h1>Game Score: {gameScore}</h1>
       </div>

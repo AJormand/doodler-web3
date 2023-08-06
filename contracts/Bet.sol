@@ -14,6 +14,7 @@ contract BetContract is Ownable {
 
     Counters.Counter private _id;
     uint256 public minimumBet = 0.001 ether;
+    uint256 private protocolEarnings;
     mapping(uint256 => Bet) id2Bet;
 
     enum BetStatus {
@@ -40,12 +41,12 @@ contract BetContract is Ownable {
         uint256 id,
         address indexed player1,
         address indexed player2,
-        uint256 amount
+        uint256 betAmount
     );
     event BetFailed(uint256 id, address indexed player1, uint256 amount);
 
     function createBet(address player1) public payable {
-        require(msg.value > minimumBet, "Bet less than minimumBet");
+        require(msg.value >= minimumBet, "Bet less than minimumBet");
         _id.increment();
         Bet memory newBet = Bet(
             _id.current(),
@@ -58,6 +59,7 @@ contract BetContract is Ownable {
             msg.value
         );
         id2Bet[_id.current()] = newBet;
+        emit BetCreated(_id.current(), player1, msg.value);
     }
 
     function takeBet(uint256 _betId, address _player2) public payable {
@@ -91,14 +93,26 @@ contract BetContract is Ownable {
         declareWinner(updatedBet);
     }
 
-    function declareWinner(Bet bet) private {
+    function declareWinner(Bet memory bet) private {
         if (bet.scorePlayer1 > 0 && bet.scorePlayer2 > 0) {
             // Determine the winner based on scores
-            id2Bet[bet.id].winner = bet.scorePlayer1 > bet.scorePlayer2
+            address winner = bet.scorePlayer1 > bet.scorePlayer2
                 ? bet.player1
                 : bet.player2;
-            id2Bet[bet.id].status = BetStatus.Completed;
-            emit BetCompleted(bet.id, bet.player1, bet.player2, bet.amount);
+            id2Bet[bet.id].winner = winner;
+            //id2Bet[bet.id].status = BetStatus.Completed;
+
+            //calculate amount of reward for winner
+            uint256 winnerReward = ((bet.betAmount * 2) * 80) / 100;
+            uint protocolFee = (bet.betAmount * 2) - winnerReward;
+            protocolEarnings += protocolFee;
+
+            //transfer funds to the winner
+            (bool sent, bytes memory data) = payable(winner).call{
+                value: winnerReward
+            }("");
+
+            emit BetCompleted(bet.id, bet.player1, bet.player2, bet.betAmount);
         }
     }
 
@@ -133,5 +147,9 @@ contract BetContract is Ownable {
 
     function getBet(uint256 id) public view returns (Bet memory) {
         return id2Bet[id];
+    }
+
+    function getProtocolEarnings() public view returns (uint256) {
+        return protocolEarnings;
     }
 }

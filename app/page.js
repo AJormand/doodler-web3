@@ -12,15 +12,16 @@ import {
   shortenAddress,
 } from "./utils/appFeatures";
 import { ethers } from "ethers";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 export default function Home() {
   const router = useRouter();
-  const { signer } = useGameContext();
+  const { signer, betContract } = useGameContext();
   const [pendingBets, setPendingBets] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchPendingBets = async () => {
-    const { contract } = await fetchBetContract(signer);
-    const bets = await contract.getPendingBets();
+    const bets = await betContract.getPendingBets();
     const formatedBets = formatBetsData(bets);
     console.log(formatedBets);
     setPendingBets(formatedBets);
@@ -55,28 +56,73 @@ export default function Home() {
   };
 
   const createBet = async () => {
-    const { contract } = await fetchBetContract(signer);
-    contract.createBet(signer.address, {
-      value: ethers.parseEther("0.2"),
-    });
+    setIsLoading(true);
+    try {
+      const tx = await betContract.createBet(signer.address, {
+        value: ethers.parseEther("0.001"),
+      });
+      const receipt = await tx.wait(1);
+    } catch (error) {
+      console.error("Error while creating bet:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const takeBet = async (betId) => {
+    setIsLoading(true);
     console.log(betId, signer.address);
-    const { contract } = await fetchBetContract(signer);
-    const tx = await contract.takeBet(betId, signer.address, {
-      value: ethers.parseEther("0.2"),
+    const tx = await betContract.takeBet(betId, signer.address, {
+      value: ethers.parseEther("0.001"),
     });
     // Wait for the transaction to be mined
     const receipt = await tx.wait(1);
-
+    setIsLoading(false);
     router.push(`/game?id=${betId}`);
   };
+
+  const getProtocolEarnings = async () => {
+    const { contract } = await fetchBetContract(signer);
+    const earnings = await contract.getProtocolEarnings();
+    console.log(ethers.formatEther(`${earnings}`));
+  };
+
+  useEffect(() => {
+    const setupEventListeners = async () => {
+      console.log("setting listeners");
+      try {
+        // Subscribe to the "BetCreated" event
+        betContract.on("BetCreated", (id, player1, amount) => {
+          console.log("Bet Created:", id, player1, amount);
+          // Do something with the event data
+        });
+      } catch (error) {
+        console.error("Error while setting up event listener:", error);
+      }
+    };
+
+    const fetchData = async () => {
+      if (betContract) {
+        setIsLoading(true);
+        await fetchPendingBets();
+        await setupEventListeners();
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      if (betContract) {
+        betContract.removeAllListeners("BetCreated");
+      }
+    };
+  }, [signer, betContract]);
 
   return (
     <main className="flex min-h-screen flex-col items-center p-24">
       <h1 className="font-bold text-xl">Web 3 jumper game</h1>
-
       <p>
         <Link href="second">Goto second page</Link>
       </p>
@@ -93,6 +139,7 @@ export default function Home() {
       <button onClick={() => fetchBetContract(signer)}> BetContract</button>
       <button onClick={() => fetchPendingBets()}> getPendingBets</button>
       <button onClick={() => createBet()}> CreateBet</button>
+      <button onClick={() => getProtocolEarnings()}> getEarnings</button>
 
       {/* <div className="flex flex-wrap">
         {pendingBets?.map((bet, index) => (
@@ -144,7 +191,9 @@ export default function Home() {
               <p className="text-sm mt-3 ml-1"> {bet.betAmount} eth</p>
             </div>
 
-            <p className="font-bold text-sm mt-3">Winner: {bet.winner}</p>
+            <p className="font-bold text-sm mt-3">
+              Winner: {shortenAddress(bet.winner)}
+            </p>
 
             {signer.address != bet.player1 &&
               bet.scorePlayer2 == 0 &&
@@ -176,6 +225,9 @@ export default function Home() {
           </div>
         ))}
       </div>
+
+      {/* Loading spinner */}
+      {isLoading && <LoadingSpinner />}
     </main>
   );
 }
