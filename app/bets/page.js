@@ -26,41 +26,6 @@ export default function Bets() {
   const [betInputValue, setBetInputValue] = useState(0.0001);
   const [createBetVisible, setCreateBetVisible] = useState(false);
 
-  //   const fetchPendingBets = async () => {
-  //     const bets = await betContract.getPendingBets();
-  //     const formatedBets = formatBetsData(bets);
-  //     console.log(formatedBets);
-  //     setPendingBets(formatedBets);
-  //   };
-
-  //   const formatBetsData = (bets) => {
-  //     return bets.map((bet) => ({
-  //       id: parseInt(bet[0]),
-  //       status: (() => {
-  //         switch (parseInt(bet[1])) {
-  //           case 0:
-  //             return "Created";
-  //           case 1:
-  //             return "InProgress";
-  //           case 2:
-  //             return "Completed";
-  //           case 3:
-  //             return "Failed";
-  //           default:
-  //             return "Unknown";
-  //         }
-  //       })(),
-  //       player1: bet[2],
-  //       scorePlayer1: parseInt(bet[3]),
-  //       player2:
-  //         bet[4] == "0x0000000000000000000000000000000000000000" ? "" : bet[4],
-  //       scorePlayer2: parseInt(bet[5]),
-  //       winner:
-  //         bet[6] == "0x0000000000000000000000000000000000000000" ? "" : bet[6],
-  //       betAmount: ethers.formatEther(bet[7]),
-  //     }));
-  //   };
-
   const createBet = async (betValue) => {
     console.log(betValue);
     setCreateBetVisible(false);
@@ -80,7 +45,7 @@ export default function Bets() {
 
   const takeBet = async (betId) => {
     setIsLoading(true);
-    const betAmount = pendingBets.find((bet) => bet.id == betId)?.betAmount;
+    const betAmount = filteredBetsArr.find((bet) => bet.id == betId)?.betAmount;
     console.log(betId, signer.address);
     const tx = await betContract.takeBet(betId, signer.address, {
       value: ethers.parseEther(betAmount.toString()),
