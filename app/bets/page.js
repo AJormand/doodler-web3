@@ -15,8 +15,13 @@ import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function Bets() {
   const router = useRouter();
-  const { signer, betContract, fetchPendingBets, filteredBetsArr } =
-    useGameContext();
+  const {
+    signer,
+    betContract,
+    fetchPendingBets,
+    filteredBetsArr,
+    setFilteredBetsArr,
+  } = useGameContext();
   const [isLoading, setIsLoading] = useState(false);
   const [betInputValue, setBetInputValue] = useState(0.0001);
   const [createBetVisible, setCreateBetVisible] = useState(false);
@@ -140,7 +145,7 @@ export default function Bets() {
         // Subscribe to the "BetCreated" event
         betContract.on("BetCreated", (id, player1, amount) => {
           console.log("BetCreagted Event emmited", id, player1, amount);
-          setPendingBets((prevBets) => {
+          setFilteredBetsArr((prevBets) => {
             return [
               {
                 id: parseInt(id),
@@ -174,12 +179,20 @@ export default function Bets() {
 
   return (
     <div className="flex flex-col">
-      <button
-        className="bg-blue-800 rounded-lg text-white p-2 m-1 w-36 ml-auto"
-        onClick={() => setCreateBetVisible(true)}
-      >
-        Create Bet 🎲
-      </button>
+      <div className="flex">
+        <button
+          className="bg-blue-800 rounded-lg text-white p-2 m-1 w-36 ml-auto"
+          onClick={() => setCreateBetVisible(true)}
+        >
+          Create Bet 🎲
+        </button>
+        <button
+          className="font-bold text-4xl"
+          onClick={() => fetchPendingBets()}
+        >
+          ↻
+        </button>
+      </div>
 
       <div className="flex flex-wrap">
         {filteredBetsArr?.map((bet, index) => (
