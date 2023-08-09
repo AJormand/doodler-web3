@@ -1,5 +1,5 @@
 import React from "react";
-import { loadingSpinner } from "../assets";
+import images from "../assets";
 import Image from "next/image";
 
 const LoadingSpinner = () => {
@@ -8,7 +8,7 @@ const LoadingSpinner = () => {
       <div className="bg-white p-10">
         <p>Processing...</p>
 
-        <Image src={loadingSpinner} className="w-16 h-16" alt="loader" />
+        <Image src={images.loadingSpinner} className="w-16 h-16" alt="loader" />
       </div>
       {/* <img src={loader} className="w-32 h-32" alt="loader" /> */}
     </div>

@@ -1,11 +1,14 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useGameContext } from "../context/GameContext";
 import { fetchBetContract } from "../utils/appFeatures";
 import LoadingSpinner from "../components/LoadingSpinner";
 import TopBar from "../components/TopBar";
+
+import images from "../assets";
 
 export default function Game() {
   const searchParams = useSearchParams();
@@ -20,7 +23,7 @@ export default function Game() {
   const [moveVerticalDirection, setMoveVerticalDirection] = useState("up");
   const [playerJumpPoint, setplayerJumpPoint] = useState(0);
   const [gameScore, setGameScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   //GRID
   let gridHeight = 500;
   let gridWidth = 300;
@@ -30,7 +33,7 @@ export default function Game() {
   let platformWidth = 80;
   let platformsIntervalID;
   //PLAYER
-  let playerWidth = 20;
+  let playerWidth = 40;
   let playerHeight = 40;
   let moveUpIntervalID;
   let moveDownIntervalID;
@@ -243,28 +246,35 @@ export default function Game() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start p-24">
+    <main className="flex min-h-screen flex-col items-center justify-start p-24 bg-slate-400">
       {/* Loading spinner */}
       {isLoading && <LoadingSpinner />}
 
-      <div className="flex justify-start items-start">
+      <Image
+        src={images.endless_sky_with_clouds}
+        className="top-0 bottom-0 absolute w-full h-full object-cover"
+      />
+
+      <div className="flex justify-start items-start z-50 text-white font-bold">
         <h1>Game Score: {gameScore}</h1>
       </div>
       <div
-        className="bg-yellow-300 relative"
+        className="bg-gray-600  bg-opacity-50 relative"
         style={{ width: `${gridWidth}px`, height: `${gridHeight}px` }}
       >
         {/* Player */}
         {player && (
           <div
-            className="absolute bg-black"
+            className="absolute"
             style={{
               left: `${player.x || 0}px`,
               bottom: `${player.y || 0}px`,
               width: `${playerWidth}px`,
               height: `${playerHeight}px`,
             }}
-          ></div>
+          >
+            <Image src={images.SimpleStoneGray} />
+          </div>
         )}
 
         {/* Platforms */}
@@ -274,7 +284,7 @@ export default function Game() {
               platform && (
                 <div
                   key={index}
-                  className="absolute bg-green-800"
+                  className="absolute bg-gray-200"
                   style={{
                     left: `${platform.x || 0}px`,
                     bottom: `${platform.y || 0}px`,
@@ -290,15 +300,14 @@ export default function Game() {
 
         {/* Game over */}
         {!gameRunning && (
-          <div className="w-full h-full bg-gray-400 opacity-80 z-50 flex items-center justify-center flex-col">
-            <h1 className="text-lg"> Game over</h1>
+          <div className="w-full h-full bg-gray-700 opacity-80 z-50 flex items-center justify-center flex-col">
+            <h1 className="text-3xl font-bold text-white"> Game over</h1>
             <Link
               href="/"
-              className="bg-slate-500 rounded-lg text-white z-50 p-2 mt-5"
+              className="bg-slate-500 rounded-lg text-white z-50 p-2 mt-5 w-[40%] text-center"
             >
               Back
             </Link>
-            <button onClick={() => updateScoreToContract()}>Test</button>
           </div>
         )}
       </div>

@@ -46,9 +46,9 @@ const TopBar = () => {
   }, []);
 
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex w-full justify-center shadow-sm">
       <div className="w-4/6 flex justify-between items-center py-2">
-        <h1>Web3Jumper</h1>
+        <h1 className="text-blue-800 font-extrabold">Web3Jumper</h1>
         <button
           className="bg-slate-500 text-white rounded-full px-2 py-1"
           onClick={() => handleConnectWallet()}

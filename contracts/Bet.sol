@@ -69,6 +69,7 @@ contract BetContract is Ownable {
         bet.status = BetStatus.InProgress;
         bet.player2 = _player2;
         id2Bet[_betId] = bet;
+        emit BetTaken(_betId, _player2, msg.value);
     }
 
     function updateScore(
