@@ -27,7 +27,7 @@ export async function POST(request) {
     currentChainId,
     player,
   } = await request.json();
-  let RPC_URL;
+  let RPC_URL = process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL;
 
   console.log(currentChainId);
   console.log("game score", gameScore);
