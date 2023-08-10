@@ -40,6 +40,9 @@ export default function Home() {
             Welcome to the{" "}
             <span className="text-blue-800">Web3 Platform Jumper</span> Game!
           </p>{" "}
+          <p className="font-bold text-red-700">
+            Game runs on Sepolia Network!!
+          </p>
           <p className="text-xl mb-8">
             <br />
             Click on <span className="font-bold text-blue-800"> Practice </span>
