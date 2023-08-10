@@ -15,13 +15,9 @@ export default function Game() {
   const { signer } = useGameContext();
   const [gameRunning, setGameRunning] = useState(false);
   const [platforms, setPlatforms] = useState([]);
-  const [playerRender, setPlayerRender] = useState({
-    playerWidth: 40,
-    playerHeight: 40,
+  const [player, setPlayer] = useState({
     x: 140,
     y: 1,
-    playerJumpHeight: 150,
-    playerJumpPoint: 1,
   });
   const [moveHorizontalDirection, setMoveHorizontalDirection] = useState("");
   const [moveVerticalDirection, setMoveVerticalDirection] = useState("");
@@ -36,39 +32,36 @@ export default function Game() {
   let platformHeight = 20;
   let platformWidth = 80;
   let platformsIntervalID;
-
   //PLAYER
-  let playerJumps = 1;
+  let playerWidth = 40;
+  let playerHeight = 40;
   let moveUpIntervalID;
   let moveDownIntervalID;
   let moveLeftIntervalID;
   let moveRightIntervalID;
-
+  let playerJumpHeight = 150;
   let gamePoints = 0;
+  let numberOfJumps = 1;
 
-  const createPlatforms = () => {
-    //create all platforms
-    let platformsArr = [];
-    for (let i = 0; i < platformNumber; i++) {
-      let X = (gridWidth - platformWidth) * Math.random();
-      let Y = (gridHeight / platformNumber) * i;
-      platformsArr.push({ x: X, y: Y });
-    }
-    setPlatforms(platformsArr);
-  };
-
-  const addPlatforms = (existingPlatforms) => {
+  const createPlatforms = (existingPlatforms) => {
     let platformsArr = [...existingPlatforms];
-    //add 1 new platform
-    let newPlatform = {
-      x: (gridWidth - platformWidth) * Math.random(),
-      y: (gridHeight / platformNumber) * platformNumber,
-    };
-    platformsArr.push(newPlatform);
-    if (playerRender.y > 1) {
+    if (platformsArr.length === 0) {
+      //create all platforms
+      for (let i = platformsArr.length; i < platformNumber; i++) {
+        let X = (gridWidth - platformWidth) * Math.random();
+        let Y = (gridHeight / platformNumber) * i;
+        platformsArr.push({ x: X, y: Y });
+      }
+    } else {
+      //add 1 new platform
+      let newPlatform = {
+        x: (gridWidth - platformWidth) * Math.random(),
+        y: (gridHeight / platformNumber) * platformNumber,
+      };
+      platformsArr.push(newPlatform);
       setGameScore((prev) => prev + 1);
+      gamePoints++;
     }
-
     return platformsArr;
   };
 
@@ -82,23 +75,23 @@ export default function Game() {
           }))
           .filter((platform) => platform.y + platformHeight > 0);
       } else {
-        let newPlatform = addPlatforms(platforms);
+        let newPlatform = createPlatforms(platforms);
         return newPlatform;
       }
     });
   };
 
   const jump = () => {
-    setPlayerRender((player) => {
+    setPlayer((player) => {
       //If Player jumps through the platform on the way up the jump point resets
-      if (player.y < player.playerJumpPoint + player.playerJumpHeight) {
+      if (player.y < playerJumpPoint + playerJumpHeight) {
         platforms.map((platform) => {
           if (
-            player.y + player.playerHeight > platform.y &&
-            player.x + player.playerWidth > platform.x &&
+            player.y + playerHeight > platform.y &&
+            player.x + playerWidth > platform.x &&
             player.x < platform.x + platformWidth
           ) {
-            player.playerJumpPoint = platform.y;
+            setplayerJumpPoint(platform.y);
           }
         });
         return { ...player, y: player.y + 2 };
@@ -110,17 +103,17 @@ export default function Game() {
   };
 
   const fall = () => {
-    setPlayerRender((player) => {
+    setPlayer((player) => {
       if (player.y > 0) {
         platforms.map((platform) => {
           if (
             player.y >= platform.y &&
             player.y <= platform.y + platformHeight &&
-            player.x + player.playerWidth > platform.x &&
+            player.x + playerWidth > platform.x &&
             player.x < platform.x + platformWidth
           ) {
             console.log("platform reached DOWN");
-            //clearInterval(moveDownIntervalID);
+            clearInterval(moveDownIntervalID);
             setMoveVerticalDirection("up");
           }
         });
@@ -142,11 +135,11 @@ export default function Game() {
   };
 
   const moveLeft = () => {
-    setPlayerRender((player) => ({ ...player, x: player.x - 2 }));
+    setPlayer((player) => ({ ...player, x: player.x - 2 }));
   };
 
   const moveRight = () => {
-    setPlayerRender((player) => ({ ...player, x: player.x + 2 }));
+    setPlayer((player) => ({ ...player, x: player.x + 2 }));
   };
 
   const updateScoreToContract = async () => {
@@ -235,9 +228,17 @@ export default function Game() {
   //EVENT LISTENER
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key == "ArrowUp" && playerJumps > 0) {
-        //player can jump only at the beginning
-        playerJumps--;
+      if (event.key == "ArrowUp") {
+        console.log(
+          event.key,
+          "GP:",
+          gamePoints,
+          "GS:",
+          gameScore,
+          moveVerticalDirection
+        );
+        gamePoints++;
+        setGameScore((prev) => prev + 1);
         setMoveVerticalDirection("up");
       } else if (event.key == "ArrowLeft") {
         setMoveHorizontalDirection("left");
@@ -247,7 +248,6 @@ export default function Game() {
         setMoveHorizontalDirection("");
       }
     };
-    createPlatforms();
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
@@ -273,14 +273,14 @@ export default function Game() {
         style={{ width: `${gridWidth}px`, height: `${gridHeight}px` }}
       >
         {/* Player */}
-        {playerRender && (
+        {player && (
           <div
             className="absolute"
             style={{
-              left: `${playerRender.x || 0}px`,
-              bottom: `${playerRender.y || 0}px`,
-              width: `${playerRender.playerWidth}px`,
-              height: `${playerRender.playerHeight}px`,
+              left: `${player.x || 0}px`,
+              bottom: `${player.y || 0}px`,
+              width: `${playerWidth}px`,
+              height: `${playerHeight}px`,
             }}
           >
             <Image src={images.SimpleStoneGray} />

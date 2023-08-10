@@ -29,7 +29,7 @@ export default function Home() {
             src={images.PlatformJumperCover}
             alt="Background Image"
           />
-          <h1 className="absolute -rotate-45 scale-60 inset-0 flex items-center justify-center text-6xl font-semibold text-white">
+          <h1 className="absolute -rotate-45 w-56 h-56 inset-0 flex items-center justify-center text-2xl font-semibold text-white">
             JUMP & EARN!
           </h1>
         </div>
